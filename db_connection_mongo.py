@@ -92,13 +92,10 @@ def updateDocument(col, docId, docText, docTitle, docDate, docCat):
 
 def getIndex(col):
     col = connectDataBase().get_collection("documents")
-    result = []
+    result = {}
 
     # Retrieve all documents from the collection
     documents = col.find()
-
-    # Create a dictionary to store term counts
-    document_term_counts = {}
 
     # Iterate through the documents and update term counts
     for doc in documents:
@@ -106,19 +103,18 @@ def getIndex(col):
         text = doc.get("text", "").lower()
         cleaned_text = re.sub(r'[?!.,]', '', text)
         terms = cleaned_text.split()
-        term_counts = {}
         for term in terms:
-            term_counts[term] = term_counts.get(term, 0) + 1
-        document_term_counts[title] = term_counts
+            if term not in result:
+                result[term] = {}
+            if title in result[term]:
+                result[term][title] += 1
+            else:
+                result[term][title] = 1
 
     # Iterate through the term counts and format the output
-    for title, term_counts in document_term_counts.items():
-        term_result = f"{title}:{', '.join([f'{term}:{count}' for term, count in term_counts.items()])}"
-        result.append(term_result)
-
-    # Print the results
-    for output in result:
-        print(output)
+    formatted_result = {term: {doc: count for doc, count in doc_counts.items()} for term, doc_counts in result.items()}
+    for term, doc_counts in formatted_result.items():
+        print(f"'{term}': {', '.join([f'{doc}:{count}' for doc, count in doc_counts.items()])}")
     # Query the database to return the documents where each term occurs with their corresponding count. Output example:
     # {'baseball':'Exercise:1','summer':'Exercise:1,California:1,Arizona:1','months':'Exercise:1,Discovery:3'}
     # ...
