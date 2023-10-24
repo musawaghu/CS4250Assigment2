@@ -58,6 +58,8 @@ def createDocument(col, docId, docText, docTitle, docDate, docCat):
         catID = 1
     elif catName == "Seasons":
         catID = 2
+    else:
+        catID = random.randint(3, 100)
     document = {
         "id": docId,
         "title": docTitle,
